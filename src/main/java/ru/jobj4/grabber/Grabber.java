@@ -64,10 +64,8 @@ public class Grabber implements Grab {
             Store store = (Store) map.get("store");
             Parse parse = (Parse) map.get("parse");
             List<Post> posts = new ArrayList<>();
-            for (var i = 1; i <= 5; i++) {
-                String link = String.format("https://career.habr.com/vacancies/java_developer?page=%d", i);
-                posts.addAll(parse.list(link));
-            }
+            String link = "https://career.habr.com/vacancies/java_developer";
+            posts.addAll(parse.list(link));
             posts.forEach(store::save);
         }
     }
