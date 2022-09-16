@@ -22,9 +22,13 @@ public class HabrCareerParse {
     private static final DateTimeParser DATE_TIME_PARSER = new HabrCareerDateTimeParser();
 
     public static void main(String[] args) throws IOException {
-        Connection connection = Jsoup.connect(PAGE_LINK);
-        Document document = connection.get();
-        Elements rows = document.select(".vacancy-card__inner");
+        Elements rows = new Elements();
+        for (int pageIndex = 1; pageIndex <= 5; pageIndex++) {
+            String url = PAGE_LINK + String.format("?page=%d", pageIndex);
+            Connection connection = Jsoup.connect(url);
+            Document document = connection.get();
+            rows.addAll(document.select(".vacancy-card__inner"));
+        }
         rows.forEach(row -> {
             Element titleElement = row.select(".vacancy-card__title").first();
             Element linkElement = titleElement.child(0);
@@ -32,7 +36,12 @@ public class HabrCareerParse {
             String vacancyName = titleElement.text();
             String link = String.format("%s%s", SOURCE_LINK, linkElement.attr("href"));
             LocalDateTime date = DATE_TIME_PARSER.parse(dateElement.attr("datetime"));
-            System.out.printf("%s %s %s%n", vacancyName, link, date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)));
+            System.out.printf(
+                    "%s %s %s%n",
+                    vacancyName,
+                    link,
+                    date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL))
+            );
         });
     }
 }
