@@ -42,6 +42,21 @@ public class HabrCareerParse {
                     link,
                     date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL))
             );
+            System.out.println(retrieveDescription(link));
+            System.out.println("=========\n");
         });
+    }
+
+    private static String retrieveDescription(String link) {
+        String description = "";
+        try {
+            Connection connection = Jsoup.connect(link);
+            Document document = connection.get();
+            Element vacancyDescription = document.select(".vacancy-show .page-section .collapsible-description .style-ugc").first();
+            description = vacancyDescription.html();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return description;
     }
 }
