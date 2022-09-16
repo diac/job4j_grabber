@@ -68,9 +68,9 @@ public class HabrCareerParse implements Parse {
             Connection connection = Jsoup.connect(link);
             Document document = connection.get();
             Element vacancyDescription
-                    = document.select(".vacancy-show .page-section .collapsible-description .style-ugc")
+                    = document.select(".style-ugc")
                     .first();
-            description = vacancyDescription.html();
+            description = vacancyDescription.text();
         } catch (IOException e) {
             e.printStackTrace();
         }
