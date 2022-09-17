@@ -30,15 +30,20 @@ public class PsqlStore implements Store, AutoCloseable {
 
     @Override
     public void save(Post post) {
-        try (PreparedStatement statement = cnn.prepareStatement("SELECT * FROM post WHERE link = ?;")) {
+        String sql = """
+                INSERT INTO POST
+                    (link, name, text, created)
+                VALUES
+                    (?, ?, ?, ?)
+                ON CONFLICT (link) DO NOTHING;
+                """;
+        try (PreparedStatement statement = cnn.prepareStatement(sql)) {
             statement.setString(1, post.getLink());
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                int existingPostId = resultSet.getInt("id");
-                post.setId(existingPostId);
-                update(post);
-            } else {
-                insert(post);
+            statement.setString(2, post.getTitle());
+            statement.setString(3, post.getDescription());
+            statement.setTimestamp(4, Timestamp.valueOf(post.getCreated()));
+            if (statement.executeUpdate() == 0) {
+                throw new IllegalStateException();
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -99,44 +104,6 @@ public class PsqlStore implements Store, AutoCloseable {
                 throw new RuntimeException(e);
             }
         } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void insert(Post post) {
-        String sql = """
-                INSERT INTO POST
-                (link, name, text, created)
-                VALUES
-                (?, ?, ?, ?);""";
-        try (PreparedStatement statement = cnn.prepareStatement(sql)) {
-            statement.setString(1, post.getLink());
-            statement.setString(2, post.getTitle());
-            statement.setString(3, post.getDescription());
-            statement.setTimestamp(4, Timestamp.valueOf(post.getCreated()));
-            if (statement.executeUpdate() == 0) {
-                throw new IllegalStateException();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void update(Post post) {
-        String sql = """
-                UPDATE post
-                SET link = ?, name = ?, text = ?, created = ?
-                WHERE id = ?;""";
-        try (PreparedStatement statement = cnn.prepareStatement(sql)) {
-            statement.setString(1, post.getLink());
-            statement.setString(2, post.getTitle());
-            statement.setString(3, post.getDescription());
-            statement.setTimestamp(4, Timestamp.valueOf(post.getCreated()));
-            statement.setInt(5, post.getId());
-            if (statement.executeUpdate() == 0) {
-                throw new IllegalStateException();
-            }
-        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
