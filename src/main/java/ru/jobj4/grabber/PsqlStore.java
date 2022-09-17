@@ -31,7 +31,7 @@ public class PsqlStore implements Store, AutoCloseable {
     @Override
     public void save(Post post) {
         String sql = """
-                INSERT INTO POST
+                INSERT INTO post
                     (link, name, text, created)
                 VALUES
                     (?, ?, ?, ?)
